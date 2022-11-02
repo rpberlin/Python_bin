@@ -188,7 +188,7 @@ def plotIESdata(meshgridTheta,meshgridPhi,meshgridX,meshgridY,meshgridZ, photoNe
     ax3.set_xlabel('X-Direction (m)')
     ax3.set_ylabel('Y-Direction (m)')
     maxFluence = np.amax(meshGridFluence)
-    plt.title(f'Irradiance Map: at 6ft  \n Max = {maxFluence:.3f} (\u03bcW/cm$^2$)   Average = {avgFluence:.3f} (\u03bcW/cm$^2$)')
+    plt.title(f'Irradiance Map \n Max = {maxFluence:.3f} (\u03bcW/cm$^2$)   Average = {avgFluence:.3f} (\u03bcW/cm$^2$)')
     cbar = plt.colorbar()
     cbar.set_label('(\u03bcW/cm$^2$)')
 
@@ -314,11 +314,13 @@ def fullSphereIntegral(photoNet,azimuthVals, elevationVals):
     return photoIntegral, surfaceIntegral/(4*np.pi)
 
 
-def calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals):
+def calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals,lampLength,lampWidth):
     verticalDistanceToEyePlane = 3*.3048 #vertica distance in feet converted to meters between lamp and eye-plane
-    verticalDistanceToFluencePlane = 3.6*.3048 #vertica distance in feet converted to meters between lamp and eye-plane
+    verticalDistanceToFluencePlane = 5*.3048 #vertica distance in feet converted to meters between lamp and eye-plane
     roomSqft = 400 #room Size in squareFeet
     eyeDX   = 0.03 #distance in meters between eye points
+    lampDX = .05
+    lampDY = .05
     roomLW = 0.5*np.sqrt(roomSqft)*.3048
     eyeHalfConeAngle = 40*np.pi/180 #HalfconeAngle of viewer
     nEyePts = int(np.ceil(2*roomLW/eyeDX))
@@ -326,6 +328,25 @@ def calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals):
     if nEyePts%2 == 0:
         nEyePts+=1
     eyePts = np.linspace(-1.0*roomLW,roomLW,num=nEyePts)
+
+    nLampPtsX = 1+int(lampLength/lampDX)
+    nLampPtsY = 1+int(lampWidth/lampDY)
+    nLampPts = nLampPtsX*nLampPtsY
+    lampPtsX = np.linspace(-0.5*lampLength,0.5*lampLength,num=nLampPtsX)
+    lampPtsY = np.linspace(-0.5*lampWidth,0.5*lampWidth,num=nLampPtsY)
+    lampPts = np.zeros([nLampPts,2])
+    idx = 0
+    for i in range(0,nLampPtsX):
+        for j in range(0,nLampPtsY):
+            lampX = lampPtsX[i]
+            lampY = lampPtsY[j]
+            lampPts[idx,0] = lampX
+            lampPts[idx,1] = lampY
+            idx +=1
+    #print('nLampPts: ',nLampPts,'lampPts: ',lampPts)
+
+
+
     meshgridEyeX = np.zeros([nEyePts,nEyePts])
     meshgridEyeY = np.zeros([nEyePts,nEyePts])
     meshgridEyeIrr = np.zeros([nEyePts,nEyePts])
@@ -334,25 +355,28 @@ def calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals):
     avgFluence = 0
     for i in range(0,nEyePts):
         for j in range(0,nEyePts):
-            deltaX = eyePts[i]
-            deltaY = eyePts[j]
-            deltaZeye = verticalDistanceToEyePlane
-            deltaZfluence = verticalDistanceToFluencePlane
-            deltaR = np.sqrt(deltaX*deltaX + deltaY*deltaY)
-            elev  = np.arctan2(deltaR,deltaZeye)
-            elevFluence  = np.arctan2(deltaR,deltaZfluence)
-            azim = np.pi+np.arctan2(deltaY,deltaX)
-            eyeAngle = np.pi*0.5-elev
-            #print(f'i {i} j {j} deltaX {deltaX} deltaY {deltaY} deltaZ {deltaZ} deltaR {deltaR} elev {elev} azim {azim}')
-            intensityFluence = interpolate2DPhoton(elevFluence*180/np.pi,azim*180/np.pi,thetaVals,phiVals,photoNet)
-            distance2 = deltaR*deltaR+deltaZeye*deltaZeye
-            distanceFluence2 = deltaR*deltaR+deltaZfluence*deltaZfluence
-            localFluence = 0.1*intensityFluence/distanceFluence2
-            if eyeAngle < eyeHalfConeAngle:
-                intensity = interpolate2DPhoton(elev*180/np.pi,azim*180/np.pi,thetaVals,phiVals,photoNet)
-                eyeIrr = 0.1*intensity/distance2
-            else:
-                eyeIrr = 0
+            eyeIrr =0
+            localFluence= 0
+            for k in range(0,nLampPts):
+                deltaX = eyePts[i] - lampPts[k,0]
+                deltaY = eyePts[j] - lampPts[k,1]
+                deltaZeye = verticalDistanceToEyePlane
+                deltaZfluence = verticalDistanceToFluencePlane
+                deltaR = np.sqrt(deltaX*deltaX + deltaY*deltaY)
+                elev  = np.arctan2(deltaR,deltaZeye)
+                elevFluence  = np.arctan2(deltaR,deltaZfluence)
+                azim = np.pi+np.arctan2(deltaY,deltaX)
+                eyeAngle = np.pi*0.5-elev
+                #print(f'i {i} j {j} deltaX {deltaX} deltaY {deltaY} deltaZ {deltaZ} deltaR {deltaR} elev {elev} azim {azim}')
+                intensityFluence = (1/nLampPts)*interpolate2DPhoton(elevFluence*180/np.pi,azim*180/np.pi,thetaVals,phiVals,photoNet)
+                distance2 = deltaR*deltaR+deltaZeye*deltaZeye
+                distanceFluence2 = deltaR*deltaR+deltaZfluence*deltaZfluence
+                localFluence += 0.1*intensityFluence/distanceFluence2
+                if eyeAngle < eyeHalfConeAngle:
+                    intensityEye = (1/nLampPts)*interpolate2DPhoton(elev*180/np.pi,azim*180/np.pi,thetaVals,phiVals,photoNet)
+                    eyeIrr += 0.1*intensityEye/distance2
+                else:
+                    eyeIrr += 0
 
             avgFluence += localFluence
 
@@ -361,6 +385,7 @@ def calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals):
             meshgridEyeIrr[i,j]=eyeIrr
             meshGridFluence[i,j]=localFluence
             maxEyeIrr = max(maxEyeIrr,eyeIrr)
+            #print(f'{i} in {nEyePts} {j} in {nEyePts} {k} in {nLampPts}')
     avgFluence = avgFluence/(nEyePts*nEyePts)
     #return meshGrids in meters and fluence and irradiance in uW/cm2
     return meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence
@@ -463,7 +488,7 @@ if __name__ == '__main__':
             meshgridTheta,meshgridPhi,meshgridX,meshgridY,meshgridZ, photoNet,thetaVals, phiVals, nominalMilliWattsOutput, unitsType, photometricType, nLamps, nPhiPts,nThetaPts,lampWidth,lampHeight,lampLength, dummy1,dummy2,dummy3 = iesReader(inputfilename)
             photoIntegral, surfaceIntegral = fullSphereIntegral(photoNet,phiVals, thetaVals)
             print(f'Integrated Intensity: {photoIntegral:.2f} (mW) of Integrated Area: {surfaceIntegral:.2f}')
-            meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence = calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals)
+            meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence = calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals,lampLength,lampWidth)
             plotIESdata(meshgridTheta,meshgridPhi,meshgridX,meshgridY,meshgridZ, photoNet,thetaVals, phiVals,meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence)
             print('TotalOutput: ',nominalMilliWattsOutput,' (claimed)',photoIntegral,'(integrated) (mW) AverageFluence: ', avgFluence,' (uW/cm2)  MaxEyeIrr: ', maxEyeIrr ,' ',maxEyeIrr ,' unitsType:',unitsType ,' photometricType:',photometricType,' nLamps: ',nLamps ,' WxHxL',lampWidth,'x',lampHeight,'x',lampLength,' Dummy: ',dummy1,dummy2,dummy3,' filename: ',inputfilename)
 
@@ -474,7 +499,7 @@ if __name__ == '__main__':
             if ext == '.ies':
                 meshgridTheta,meshgridPhi,meshgridX,meshgridY,meshgridZ, photoNet,thetaVals, phiVals,nominalMilliWattsOutput, unitsType, photometricType, nLamps, nPhiPts,nThetaPts,lampWidth,lampHeight,lampLength, dummy1,dummy2,dummy3 = iesReader(inputfilename)
                 photoIntegral, surfaceIntegral = fullSphereIntegral(photoNet,phiVals, thetaVals)
-                meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence = calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals)
+                meshgridEyeX,meshgridEyeY,meshgridEyeIrr,meshGridFluence, maxEyeIrr, avgFluence = calcEyeIntensityAndFluenceMaps(photoNet,thetaVals, phiVals,lampLength,lampWidth)
                 print(f'File: {i}  TotalOutput: {nominalMilliWattsOutput:.2f} (mWnom) {photoIntegral:.2f} (mWint)\tAvgFluence: {avgFluence:.2f} (uW/cm2)\tMaxEyeIrr: {maxEyeIrr:.2f} (uW/cm2)  unitsType: {unitsType}  photometricType: {photometricType}  nLamps: {nLamps} WxHxL {lampWidth:.2f} x {lampHeight:.2f} x {lampLength:.2f} Dummy: {dummy1:.2f} {dummy2:.2f} {dummy3:.2f}  filename: {inputfilename}')
 
 
