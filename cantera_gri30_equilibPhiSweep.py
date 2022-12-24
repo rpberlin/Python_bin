@@ -40,8 +40,9 @@ def plotTandX(T,X,species_to_track):
     nPhiPts, nSpecies = X.shape
     fig = plt.figure()
     ax1 = fig.add_subplot(121)
-    line1 = plt.plot(phiPts,T,label='Temperature (K)')
+    line1 = plt.plot(phiPts,T,label='Temperature')
     ax1.set_xlabel('Equivalence Ratio (-)')
+    ax1.set_ylabel('Temperature (K)')
     plt.title('Temperature')
     plt.legend()
 
@@ -50,6 +51,7 @@ def plotTandX(T,X,species_to_track):
         line2 = plt.semilogy(phiPts,X[:,i],label=specie)
     ax2.set_ylim([1e-6,1])
     ax2.set_xlabel('Equivalence Ratio (-)')
+    ax2.set_ylabel('Mole Fraction (-)')
     plt.legend()
     plt.title('Equilibrium Mole Fractions')
     plt.show()
@@ -61,7 +63,7 @@ def plotTandX(T,X,species_to_track):
 if __name__ == '__main__':
     phi_low = 0.4
     phi_high = 3.4
-    nPhiPts = 100
+    nPhiPts = 50
     phiPts = np.linspace(phi_low, phi_high, nPhiPts)
     species_to_track = ['O2', 'H2', 'CO', 'CO2']
 
