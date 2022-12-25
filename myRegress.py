@@ -11,21 +11,26 @@ def myRegress(y,X):
 
 
     Nsamps,Nvar = X.shape;
-    print('Nsamsp Nvar', Nsamps, Nvar)
+    #print('Nsamsp Nvar', Nsamps, Nvar)
 
     X0 = np.ones((Nsamps,1))
     #print('X0',X0)
     X = np.hstack((X,X0))
     #print('X = ', X.shape, X)
     #print('y = ', y.shape, y)
-
-    FtF = linalg.inv(X.T*X)
+    toInvert = X.T*X
+    toInvert_rank = np.linalg.matrix_rank(toInvert)
+    toInvert_size = toInvert.shape[0]
+    #print(f"Rank: {np.linalg.matrix_rank(toInvert)} Shape: {toInvert.shape}")
+    FtF = 0*toInvert
+    if toInvert_rank == toInvert_size:
+        FtF = linalg.inv(X.T*X)
     coeffs = FtF*X.T*y
 
     H=X*FtF*X.T;
     yhat = H*y;
     resid = y-X*coeffs;
-
+    #print(H,yhat,resid,coeffs)
     #print('coeffs = ', coeffs.shape, coeffs)
     #print('yhat = ',yhat.shape, yhat)
 

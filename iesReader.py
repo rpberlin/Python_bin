@@ -504,20 +504,4 @@ if __name__ == '__main__':
 
 
 
-def forLater():
-    print('nLines =', len(Lines))
 
-    lampName = ' '.join(Lines[0].split(']')[1:]).strip()
-    print('lampName: ',lampName)
-
-    testName = ' '.join(Lines[1].split(']')[1:]).strip()
-    print('testName: ',testName)
-
-    testLabName = ' '.join(Lines[2].split(']')[1:]).strip()
-    print('testLabName: ',testLabName)
-
-    testDate = ' '.join(Lines[3].split(']')[1:]).strip()
-    print('testDate: ',testDate)
-
-    manufacturer = ' '.join(Lines[4].split(']')[1:]).strip()
-    print('manufacturer: ',manufacturer)

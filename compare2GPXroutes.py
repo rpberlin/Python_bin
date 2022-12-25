@@ -6,9 +6,8 @@ from parseGPX import parseGPX
 from plot_PMdata import calcPMdata
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from matplotlib.ticker import StrMethodFormatter, NullFormatter
+
 import numpy as np
-import scipy
 plt.style.use('bmh')
 
 def compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,gpx1,sPath2, elev2, power2, cad2, hr2,gpx2):
@@ -86,7 +85,7 @@ def compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,gpx1,sPath2, elev2, powe
     tDiff=np.zeros(nPts2);
     i0=0
     for i in range(0,nPts2):
-        tinterp, i0=getQtyAtSfromI0(sPath2[i],sPath1,range(0,nPts1),i0)
+        tinterp, i0 = getQtyAtSfromI0(sPath2[i],sPath1,range(0,nPts1),i0)
         tDiff[i] = tinterp-i
         #tDiff[i]=getQtyAtS(sPath2[i],sPath1,range(0,nPts1))-i;
 
@@ -148,8 +147,8 @@ def compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,gpx1,sPath2, elev2, powe
     plt.legend()
     #plt.grid(visible=True, which='minor', linestyle='--')
     ax3a.xaxis.set_minor_formatter(mticker.ScalarFormatter())
-    #ax3a.xaxis.set_major_formatter(mticker.ScalarFormatter())
-    ax3a.xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
+    ax3a.xaxis.set_major_formatter(mticker.ScalarFormatter())
+    #ax3a.xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
     ax3a.set_xlabel('Power (W)');
     ax3a.set_ylabel('Duration (minutes)');
     plt.show()
@@ -212,10 +211,12 @@ if __name__ == '__main__':
 
     if n < 3:
         print("Correct Usage compare2GPXroutes.py filename1.gpx filename2.gpx")
+        inputfilename1 = '/Users/ryanblanchard/Documents/gpxFiles/Apple21.gpx'
+        inputfilename2 = '/Users/ryanblanchard/Documents/gpxFiles/Apple22.gpx'
 
     if n >= 3:
         inputfilename1 = sys.argv[1];
         inputfilename2 = sys.argv[2];
-        sPath1, elev1, power1, cad1, hr1 = parseGPX(inputfilename1)
-        sPath2, elev2, power2, cad2, hr2 = parseGPX(inputfilename2)
-        compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,inputfilename1,sPath2, elev2, power2, cad2, hr2,inputfilename2)
+    sPath1, elev1, power1, cad1, hr1 = parseGPX(inputfilename1)
+    sPath2, elev2, power2, cad2, hr2 = parseGPX(inputfilename2)
+    compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,inputfilename1,sPath2, elev2, power2, cad2, hr2,inputfilename2)

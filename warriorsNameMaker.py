@@ -174,7 +174,11 @@ if not (randomSuffix == 'kit' or randomSuffix == 'paw'):
 print('you died of ', random.choice(causeofdeath) )
 
 
-
+def getName():
+    randomPrefix = random.choice(prefixes)
+    randomSuffix = random.choice(suffixes)
+    fullName = randomPrefix+randomSuffix
+    return fullName
 
 # EXAMPLES
 #Your name is  skyblaze  you are in  wind  clan

@@ -78,7 +78,7 @@ def VAMify(sPath, elev, power, cad, hr,gpxfilename):
     print('XtoRegFunc',VAMtable[:,1])
     print('YtoRegFunc',VAMtable[:,2])
     coeffs, yhat, resid = myRegress(VAMtable[:,2],VAMtable[:,1])
-    m1 =coeffs[0]
+    m1 =coeffs[0]+1e-6
     b1 =coeffs[1]
     #m1=1
     #b1=1
@@ -91,7 +91,7 @@ def VAMify(sPath, elev, power, cad, hr,gpxfilename):
     m2 =coeffs2[0]
     b2 =coeffs2[1]
     p1000vam = np.array( [(1000-b1)/m1 , 1000*m2+b2])
-    p1000vamstar = p1000vam.sum()/len(p1000vam)
+    p1000vamstar = p1000vam.sum()/(1e-6+len(p1000vam))
     vam1000 = np.array([1000, 1000])
 
 
