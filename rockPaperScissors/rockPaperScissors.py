@@ -1,7 +1,6 @@
 #!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
 
 import pygame
-from pygame.locals import *
 import mhSprites as mh
 import mhVecops as vecOp
 import math
@@ -18,7 +17,7 @@ Y = (255,255,0)
 O = (255,165,0)
 R = (255,0,0)
 
-(width,height) = (1600,900)
+(width,height) = (1300,700)
 window_size = (width,height)
 P = []
 
@@ -41,7 +40,6 @@ running = True
 allSprites = pygame.sprite.Group()
 allMouses  = pygame.sprite.Group()
 allCats    = pygame.sprite.Group()
-allDogs    = pygame.sprite.Group()
 firstMouse = mh.mhMouse((500,130))
 theCheese = mh.mhCheese((500,130))
 allMouses.add(firstMouse)
@@ -66,16 +64,14 @@ while running:
             mousePos = pygame.mouse.get_pos()
             firstMouse.setMotion(mousePos,(0,0))
             firstMouse.removeTail()
-        #if pygame.mouse.get_pressed()[1]:
-        if pygame.key.get_pressed()[K_c]:
+        if pygame.mouse.get_pressed()[1]:
             mousePos = pygame.mouse.get_pos()
             newCat = mh.mhCat(mousePos)
             allCats.add(newCat)
             allSprites.add(newCat)
             catForces.append((0,0))
             print('CLICKED!: ',mousePos)
-        #if pygame.mouse.get_pressed()[2]:
-        if pygame.key.get_pressed()[K_m]:
+        if pygame.mouse.get_pressed()[2]:
             mousePos = pygame.mouse.get_pos()
             newMouse = mh.mhMouse(mousePos)
             allMouses.add(newMouse)
@@ -83,35 +79,25 @@ while running:
             mouseForces.append((0,0))
             print('CLICKED!: ',mousePos)
 
-        if pygame.key.get_pressed()[K_d]:
-            mousePos = pygame.mouse.get_pos()
-            newDog = mh.mhDog(mousePos)
-            allDogs.add(newDog)
-            allSprites.add(newDog)
-            print('CLICKED!: ',mousePos)
-
-
 
     mousePos = pygame.mouse.get_pos()
     theCheese.setMotion(mousePos)
     theCheese.draw(screen)
     #mousePos = (400,150)
-    mh.calcCatAndMouseForces(allCats,allMouses,allDogs,theCheese)
+    catForces, mouseForces = mh.calcCatAndMouseForces(allCats,allMouses,catForces,mouseForces,theCheese)
     for idx, thisCat in enumerate(allCats):
-        thisCat.integrateMotion(delta_t*speed,window_size)
+        thisCat.integrateMotion(catForces[idx],delta_t*speed,window_size)
         thisCat.draw(screen)
     for idx, thisMouse in enumerate(allMouses):
-        thisMouse.integrateMotion(delta_t*speed,window_size)
+        print('MouseForce Info: ',idx,mouseForces[idx])
+        thisMouse.integrateMotion(mouseForces[idx],delta_t*speed,window_size)
         thisMouse.draw(screen)
-    for idx, thisDog in enumerate(allDogs):
-        thisDog.integrateMotion(delta_t*speed,window_size)
-        thisDog.draw(screen)
-    allMouses, allCats, allDogs = mh.catMousecollisions(allMouses,allCats,allDogs, theCheese)
+    allMouses, mouseForces = mh.catMousecollisions(allCats,allMouses,catForces,mouseForces)
     new_tick = pygame.time.get_ticks()
     delta_tick = new_tick-last_tick
-    print('nSprites: ',len(allSprites),'nMouses: ',len(allMouses),'nCats: ',len(allCats),'nDogs: ',len(allDogs),' delta_tick: ',delta_tick)
+    print('nSprites: ',len(allSprites),' delta_tick: ',delta_tick)
     pygame.display.flip()
-    pygame.time.delay(max(0,delta_t-delta_tick))
+    pygame.time.delay(delta_t-delta_tick)
     last_tick = new_tick
     screen.fill(black)
 
