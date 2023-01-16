@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
+
 def ColebrookEqualsZeroIfCorrect(Re,epsOverD,fd):
     return -2.0*np.sqrt(fd)*np.log10(epsOverD/3.7+2.5/(Re*np.sqrt(fd)))-1.0
 
@@ -12,11 +13,16 @@ def solveImplicitColebrook(Re,epsOverD,f0=0.03):
     solverURF = .3
     tolerance = 1e-6
     Err = ColebrookEqualsZeroIfCorrect(Re,epsOverD,f0)
+    nSteps = 0
     while abs(Err) > tolerance:
         Err = ColebrookEqualsZeroIfCorrect(Re,epsOverD,f0)
         dErr_df = (ColebrookEqualsZeroIfCorrect(Re,epsOverD,f0*fstep)-Err)/(f0*(fstep-1.0))
         f1 = f0 - Err/dErr_df
         f0 = f0*(1-solverURF) + solverURF*f1
+        
+        nSteps += 1
+        if nSteps > 1000:
+            return 1.0
         #print('f0: ',f0, ' f1: ',f1,' Err: ',Err,' dEdf: ',dErr_df)
 
     return f0
@@ -70,28 +76,33 @@ def calcPressureLoss(Velocity,rho,mu,Diam,Length,eps=0,f0=.03):
 def solvePipeVelocity(deltaP,rho,mu,Length,Diam,eps=0,fguess=0.03):
     sign =1
     if deltaP < 0:
-        sign = -1
-        deltaP = sign*deltaP
+        deltaP = -1*deltaP
+
     U0 = 0.01
     dP0,f0 = calcPressureLoss(U0,rho,mu,Diam,Length,eps,fguess)
     Ustep = 1.001
     solverURF = .5
     tolerance = 1e-4
     Err = (dP0 - deltaP)/deltaP
+    nSteps =0
     while abs(Err) > tolerance:
         dPstar, f0 = calcPressureLoss(U0*Ustep,rho,mu,Diam,Length,eps,f0)
         ErrStar = (dPstar - deltaP)/deltaP
         dErr_dU = (ErrStar-Err)/(U0*(Ustep-1.0))
         U1 = U0 - Err/dErr_dU
         U0 = U0*(1-solverURF) + solverURF*U1
+        U0 = max(1e-4,U0)
         dP0, f0 = calcPressureLoss(U0,rho,mu,Diam,Length,eps,f0)
         Err = (dP0-deltaP)/deltaP
+        nSteps += 1
+        if nSteps > 100:
+            return 1.0,1.0
         #print(U0,U1,f0, Err)
 
-    return sign*U0, f0
+    return U0, f0
 
-def solveBuoyantFlowLoop(Qdot,Thot, rho, drho_dT, cp, mu, U0, pipeDiam, totalPipeLength, deltaH ):
-    f0 = 0.03
+def solveBuoyantFlowLoop(Qdot,Thot, rho, drho_dT, cp, mu, dmu_dT, U0, pipeDiam, totalPipeLength, deltaH, f0=.03):
+    #f0 = 0.03
     gravity = 9.81                                 # NaK Bulk Velocity First Guess
     solverURF = .3
     tolerance = 1e-4
@@ -106,11 +117,17 @@ def solveBuoyantFlowLoop(Qdot,Thot, rho, drho_dT, cp, mu, U0, pipeDiam, totalPip
         Tcold = Thot-deltaT
         delta_rho = -1*deltaT*drho_dT         # NaK density change responsible for driving natural convection
         deltaP = delta_rho*gravity*deltaH       # Natural Convection driving pressure
-        U1,f0 = solvePipeVelocity(deltaP,rho,mu,totalPipeLength,pipeDiam,0,f0)  #Calculate the updated velocity and
+        rhoCold = rho + drho_dT*(Tcold-300)
+        rhoHot =  rho + drho_dT*(Thot-300)
+        muCold = mu + dmu_dT*(Tcold-300)
+        muHot =  mu + dmu_dT*(Thot-300)
+        rhoEff = 0.5*(rhoCold + rhoHot)   # average density in the flow loop
+        muEff  = 0.5*(muCold + muHot)      # average viscosity in the flow loop    
+        U1,f0 = solvePipeVelocity(deltaP,rhoEff,muEff,totalPipeLength,pipeDiam,0,f0)  #Calculate the updated velocity and
         U0 = U0*(1-solverURF)+U1*solverURF
         Err = U1-U0
-        print('Step: ',steps,' Err: ',Err,' U0: ',U0,' f0: ',f0,' U1: ',U1,' deltaT: ',deltaT,' Tcold: ',Tcold)
-    return mdot0, U1, Tcold, f0
+    #print('Step: ',steps,' Err: ',Err,' U0: ',U0,' f0: ',f0,' U1: ',U1,' deltaT: ',deltaT,' Tcold: ',Tcold)
+    return mdot0, U1, Tcold, rhoEff, muEff, f0
 
 
 
