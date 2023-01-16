@@ -74,7 +74,6 @@ def calcPressureLoss(Velocity,rho,mu,Diam,Length,eps=0,f0=.03):
     return rho*Velocity*Velocity*Length*f0/(2*Diam), f0
 
 def solvePipeVelocity(deltaP,rho,mu,Length,Diam,eps=0,fguess=0.03):
-    sign =1
     if deltaP < 0:
         deltaP = -1*deltaP
 
@@ -129,11 +128,52 @@ def solveBuoyantFlowLoop(Qdot,Thot, rho, drho_dT, cp, mu, dmu_dT, U0, pipeDiam, 
     #print('Step: ',steps,' Err: ',Err,' U0: ',U0,' f0: ',f0,' U1: ',U1,' deltaT: ',deltaT,' Tcold: ',Tcold)
     return mdot0, U1, Tcold, rhoEff, muEff, f0
 
+def rhoIDG_1atm_Tcelsius(MW,Tc):
+    R_g         = 8315         #J/mol-K
+    P_atm       = 101325        #Atmospheric Pressure
+    rho = P_atm*MW/(R_g*(Tc+273.15))
+    return rho
+    
 
-
-
-
-
+def heatExchangerDesign(Qdot,Thot,Treturn,Tambient,Dpipe):
+    cp_air = 1040                       #Specific Heat of Air
+    h_conv = 7                          #Convective Heat Transfer Coefficient of Natural Convection in Air
+    MW_air = 28.2                       #Molecular Weight of Air
+    gravity = 9.81     
+    tube_over_pipe_sectionArea = 2          #Ratio of total tube to NaK pipe cross-section areas 
+    blockage_ratio = 0.5                #Fraction of Air Cross Section Blocked by Tubes        
+    rho_air = rhoIDG_1atm_Tcelsius(MW_air, Tambient)    #Air Density at Ambient Temperature and 1atm
+    T_tubeAvg = 0.5*(Thot+Treturn)                      #Average Temparature from NaK Available for Heat Xfer
+    deltaTairNaK = T_tubeAvg-Tambient                   #Average Temperature Difference Driving Heat Xfer from NaK to Air
+    deltaTairair = 0.25*deltaTairNaK                    #Air temperature rise across heat exchanger limited to .25 of available delta T
+    rho_airOut = rhoIDG_1atm_Tcelsius(MW_air, Tambient+deltaTairair)  #air density after heat exchanger
+    AtubesOuter = Qdot/(deltaTairNaK*h_conv)            #Total Tube Surface Area required to reject Qdot given delta T and h
+    mdotAir = Qdot/(deltaTairair*cp_air)                #Mass flow of air required to limit deltaTairair from exceeding constraint
+    Across_pipe = 0.25*np.pi*np.power(Dpipe,2)          #Cross-sectional are of NaK pipe
+    Across_Alltubes = tube_over_pipe_sectionArea*Across_pipe
+    
+    dMin = .005
+    dMax = .05
+    nDiams = 20
+    bestMaxDimension = 1e6
+    allDiams = myLogSpace(dMin, dMax, nDiams)   #list of all diameters to be checked
+    for diam in allDiams:
+        A_per_tube = np.pi*0.25*np.power(diam,2)    #Cross sectional Area per tube 
+        N_tubes = Across_Alltubes/A_per_tube        #N tubes
+        W = diam*np.sqrt(N_tubes)/blockage_ratio             #Total Width of Heat Exchanger 
+        L =  AtubesOuter/(np.pi*diam*N_tubes)       #Tube Length To Give Required Surface Area
+        A_open = L*W*blockage_ratio                 #Total Area of Heat Exchanger Open for Air Flow
+        U_open = mdotAir/(rho_air*A_open)           #Air Velocity at minimum cross-section (Between Tubes)
+        KE_air = 0.5*rho_air*np.power(U_open,2)     #Kinetic Energy of Air at minimum cross section
+        H = W+KE_air/(0.5*gravity*(rho_air-rho_airOut))   #Stack Height required to supply necessary KE_air
+        maxDimension = max(L,W,H)
+        #print('Diam**: ',diam, N_tubes, L, W, H, maxDimension)
+        if maxDimension < bestMaxDimension:                           #find diameter that minimizes total heat exchanger volume
+            bestD, bestN, bestL, bestW, bestH, bestMaxDimension = diam, N_tubes, L, W, H, maxDimension    
+            #print('Diam**: ',diam, N_tubes, L, W, H, maxDimension)
+    return bestD, bestN, bestL, bestW, bestH, bestMaxDimension
+    
+    
 if __name__ == '__main__':
 
     rho = 1000
