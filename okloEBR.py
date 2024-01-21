@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import colebrook_pipeflow as cPipe
 
-### CONSTANTS AND 
+### CONSTANTS  
 gravity     = 9.81          #m/s^2      @300 C 
 R_g         = 8315         #J/mol-K
 P_ref       = 101325        #Atmospheric Pressure

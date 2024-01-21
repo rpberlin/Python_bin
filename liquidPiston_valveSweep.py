@@ -18,7 +18,7 @@ def runValveSweep(inlet_open_pts=np.linspace(0,40,5), outlet_open_pts=np.linspac
     for i, inlet_open_angle in enumerate(inlet_open_pts):
         for j, outlet_open_angle in enumerate(outlet_open_pts):
             eta =0.48
-            #states, Q , W , MEP, eta , CO_emission ,xticks, ticklabels = p1.runLPtry1_Simulation(rpm, inlet_open_angle, inlet_open_delta,outlet_open_angle,injector_open_angle,injector_open_delta)
+            states, Q , W , MEP, eta , CO_emission ,xticks, ticklabels = p1.runLPtry1_Simulation(rpm, inlet_open_angle, inlet_open_delta,outlet_open_angle,injector_open_angle,injector_open_delta)
             etaGrid[i,j]=eta
             inletGrid[i,j]=inlet_open_angle
             outletGrid[i,j]=outlet_open_angle
@@ -27,9 +27,7 @@ def runValveSweep(inlet_open_pts=np.linspace(0,40,5), outlet_open_pts=np.linspac
                 bestInletOpenAngle = inlet_open_angle
                 bestOutletOpenAngle = bestOutletOpenAngle
 
-    x = (inletGrid-min(inlet_open_pts))/(max(inlet_open_pts)-min(inlet_open_pts))
-    y = (outletGrid-min(outlet_open_pts))/(max(outlet_open_pts)-min(outlet_open_pts))
-    etaGrid = 0.44-0.03*x +0.05*y -.08*x**2 - .03*y**2 -.04*x*y
+
     print(x,outlet_open_pts)
 
 

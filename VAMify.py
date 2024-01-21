@@ -1,11 +1,12 @@
 #!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
 import matplotlib.pyplot as plt
+from   matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import sys
 from parseGPX import *
 from plot_PMdata import *
 from myRegress import myRegress
 from krigingInterpolation import krigingInterpolation
-import numpy
+import numpy as np
 plt.style.use('bmh')
 
 def VAMify(sPath, elev, power, cad, hr,gpxfilename):
@@ -44,6 +45,8 @@ def VAMify(sPath, elev, power, cad, hr,gpxfilename):
     ax1.set_ylabel('Elevation (m)')
     ax1.set_xlabel('Distance (km)')
     line1 = plt.plot(sPath/1000,elev,'b', linewidth=1)
+    ax1.xaxis.set_major_locator(MultipleLocator(5))
+    ax1.set_xlim([0,105])
 
     ax2 = fig.add_subplot(212)
     ax2.set_ylabel('VAM (m/hr)')

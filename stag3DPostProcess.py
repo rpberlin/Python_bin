@@ -2,6 +2,7 @@
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+import matplotlib as mp
 
 import os
 
@@ -109,7 +110,7 @@ def sliceReader(sliceFilename):
     plt.title('V-Vel')
     plt.colorbar()
 
-    ax2 = fig.add_subplot(333)
+    ax3 = fig.add_subplot(333)
     plt.contourf(meshgridX, meshgridZ, meshgridW)
     #ax2.set_xlabel('Xlocation (m)')
     #ax2.set_ylabel('Zlocation (m)')
@@ -117,7 +118,7 @@ def sliceReader(sliceFilename):
     plt.colorbar()
 
 
-    ax2 = fig.add_subplot(334)
+    ax4 = fig.add_subplot(334)
     plt.contourf(meshgridX, meshgridZ, meshgridHx)
     #ax2.set_xlabel('Xlocation (m)')
     ax2.set_ylabel('Zlocation (m)')
@@ -125,31 +126,31 @@ def sliceReader(sliceFilename):
     plt.colorbar()
 
 
-    ax2 = fig.add_subplot(335)
-    ax2.contourf(meshgridX, meshgridZ, meshgridHy)
+    ax5 = fig.add_subplot(335)
+    ax5.contourf(meshgridX, meshgridZ, meshgridHy)
     #ax2.set_xlabel('Xlocation (m)')
     #ax2.set_ylabel('Zlocation (m)')
     plt.title('HY')
     plt.colorbar()
 
-    ax2 = fig.add_subplot(336)
+    ax6 = fig.add_subplot(336)
     plt.contourf(meshgridX, meshgridZ, meshgridHz)
     #ax2.set_xlabel('Xlocation (m)')
     #ax2.set_ylabel('Zlocation (m)')
     plt.title('HZ')
     plt.colorbar()
 
-    ax2 = fig.add_subplot(337)
+    ax7 = fig.add_subplot(337)
     plt.contourf(meshgridX, meshgridZ, meshgridP)
-    ax2.set_xlabel('Xlocation (m)')
-    ax2.set_ylabel('Zlocation (m)')
+    ax7.set_xlabel('Xlocation (m)')
+    ax7.set_ylabel('Zlocation (m)')
     plt.title('Pressure')
     plt.colorbar()
     #plt.cmap()
 
-    ax2 = fig.add_subplot(338)
-    ax2.contourf(meshgridX, meshgridZ, meshgridPprime)
-    ax2.set_xlabel('Xlocation (m)')
+    ax8 = fig.add_subplot(338)
+    ax8.contourf(meshgridX, meshgridZ, meshgridPprime)
+    ax8.set_xlabel('Xlocation (m)')
     #ax2.set_ylabel('Zlocation (m)')
     plt.title('Pprime')
     plt.colorbar()
@@ -164,6 +165,7 @@ def sliceReader(sliceFilename):
     plt.show()
     #print('vectorSize: ',nVectorDataPts)
     #print('photoNet: ',photoNet)
+    print('matplotlib Version: ', mp.__version__)
     return
 
 

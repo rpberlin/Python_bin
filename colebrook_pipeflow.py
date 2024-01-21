@@ -170,7 +170,7 @@ def heatExchangerDesign(Qdot,Thot,Treturn,Tambient,Dpipe):
         #print('Diam**: ',diam, N_tubes, L, W, H, maxDimension)
         if maxDimension < bestMaxDimension:                           #find diameter that minimizes total heat exchanger volume
             bestD, bestN, bestL, bestW, bestH, bestMaxDimension = diam, N_tubes, L, W, H, maxDimension    
-            #print('Diam**: ',diam, N_tubes, L, W, H, maxDimension)
+            print('Diam**: ',diam, N_tubes, L, W, H, maxDimension, bestMaxDimension)
     return bestD, bestN, bestL, bestW, bestH, bestMaxDimension
     
     

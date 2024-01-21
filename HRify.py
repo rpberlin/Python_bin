@@ -16,31 +16,34 @@ if __name__ == '__main__':
     #for i in range(1, n):
         #print(i," ",sys.argv[i])
     if n == 1:
-        inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/LKN_Fondo_22.gpx'
-        inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Ardiden309.gpx'
+        inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Apple21.gpx'
+        #inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Ardiden309.gpx'
         #inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Ardiden265.gpx'
     if n==2:
         inputfilename = sys.argv[1];
 
     sPath, elev, power, cad, hr = parseGPX.parseGPX(inputfilename)
-    mySSHRobj1 = SSheart.mySSHeart(HRmin, HRmax, Pmax)
+    mySSHRobj1 = SSheart.mySSHeart(HRmin, HRmax, Pmax,hr,power)
     HRhatUnfitted = mySSHRobj1.HRsim(power, hr[0])
-    
-    errHist = mySSHRobj1.HRfitter(hr, power)
+    res  = mySSHRobj1.HRfitter_scipy()
+    xFinal = res.x 
+    mySSHRobj1.setHRclassParamsFromX(xFinal)
+
+
+    #errHist = mySSHRobj1.HRfitter(hr, power)
     HRhatBestFit = mySSHRobj1.HRsim(power, hr[0])
     #mySSHRobj1.HRerrPlot(hr,HRhatBestFit)
-    mySSHRobj1.HRerrPlotWithBounds(hr, HRhatBestFit, power)
-    mySSHRobj1.HRbeforeAfterPlot(hr,HRhatUnfitted,HRhatBestFit,errHist)    
+    #mySSHRobj1.HRerrPlotWithBounds(hr, HRhatBestFit, power)
+    mySSHRobj1.HRerrPlotWith300WBounds(hr, HRhatBestFit, power)
+    #mySSHRobj1.HRbeforeAfterPlot(hr,HRhatUnfitted,HRhatBestFit,errHist)
     print(mySSHRobj1)
-    
+
     fpathgpx = pathlib.Path(inputfilename)
-    
-    
+
+
     HRobjFilename = HRobjDirectory+"SSHRobj_"+fpathgpx.stem+".hrobj"
     print(HRobjFilename)
     with open(HRobjFilename,'wb') as file_pickle:
         pickle.dump(mySSHRobj1,file_pickle)
-    
+
     file_pickle.close()
-    
-    

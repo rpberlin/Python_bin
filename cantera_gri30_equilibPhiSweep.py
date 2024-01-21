@@ -8,10 +8,10 @@ plt.style.use('bmh')
 def  gri30_equilibPhiSweep(phiPts, species_to_track):
     carbon = ct.Solution('graphite.yaml')
     g1 = ct.Solution('gri30.yaml')
-    fuel = "CH4:1"
+    fuel = "CH4:.1,H2:0.1"
     g1.TP = 273, 101325
     mix_phases = [(g1, 1.0), (carbon, 0.0)]
-    air = "O2:1.00,N2:3.77"
+    air = "O2:1.00,N2:0.1"
 
 
     #g1.set_equivalence_ratio(1.0, fuel="CH4:1", oxidizer="O2:0.233,N2:0.767", basis='mass')
@@ -27,7 +27,7 @@ def  gri30_equilibPhiSweep(phiPts, species_to_track):
         mix.T = 300
         mix.P = 101325
         #g1.equilibrate('HP',solver='gibbs')
-        mix.equilibrate('HP',solver='gibbs')
+        mix.equilibrate('UV')
         T_flame[i] = mix.T
         X_table[i,:] = g1[species_to_track].Y
 
@@ -40,11 +40,11 @@ def plotTandX(T,X,species_to_track):
     nPhiPts, nSpecies = X.shape
     fig = plt.figure()
     ax1 = fig.add_subplot(121)
-    line1 = plt.plot(phiPts,T,label='Temperature')
+    line1 = plt.plot(phiPts,T-273,label='Temperature Rise in CH4/Air')
     ax1.set_xlabel('Equivalence Ratio (-)')
-    ax1.set_ylabel('Temperature (K)')
-    plt.title('Temperature')
-    plt.legend()
+    ax1.set_ylabel('Temperature Delta ($^\circ$C)')
+    plt.title('CV Ignition Temperature Rise')
+    #plt.legend()
 
     ax2 = fig.add_subplot(122)
     for i, specie in enumerate(species_to_track):
@@ -56,13 +56,15 @@ def plotTandX(T,X,species_to_track):
     plt.title('Equilibrium Mole Fractions')
     plt.show()
 
+    fig.tight_layout()
+
 
 
 
 
 if __name__ == '__main__':
     phi_low = 0.4
-    phi_high = 3.4
+    phi_high = 1.8
     nPhiPts = 50
     phiPts = np.linspace(phi_low, phi_high, nPhiPts)
     species_to_track = ['O2', 'H2', 'CO', 'CO2']

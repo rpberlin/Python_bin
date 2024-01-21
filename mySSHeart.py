@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 plt.style.use('bmh')
 
 class mySSHeart:
-    def __init__(self,HRmin, HRmax, Pmax):
+    def __init__(self,HRmin, HRmax, Pmax,HRrefdata=None,Powerrefdata=None):
         self.delayTau = 4.582
         self.decayTau = 75
         self.HRmin = HRmin
@@ -13,6 +14,8 @@ class mySSHeart:
         self.HRvsP_m = .6
         self.loadCoeff = 3e-5
         self.loadExp = .8
+        self.HRref = HRrefdata
+        self.Powref = Powerrefdata
 
     def __str__(self):
         ret = f"Pmax: {self.Pmax:.2f} HR: {self.HRmin:.2f}-{self.HRmax:.2f}\n"
@@ -21,7 +24,13 @@ class mySSHeart:
         ret = ret+f"LoadCoeff: {self.loadCoeff:.3e} LoadExp: {self.loadExp:.3f}\n"
         ret = ret+f"300W Steady State HR: {self.getHRfor300W():.2f} (bpm)"
         return ret
+    
 
+    def HRfitter_scipy(self):
+        x0 = self.getXfromHRclassParams()
+        res = minimize(self.HRerr_standalone, x0, method='nelder-mead',
+               options={'xatol': 1e-4, 'disp': True})
+        return res
 
     def HRfitter(self, HRactual,power):
         HR0 = HRactual[0]
@@ -41,17 +50,17 @@ class mySSHeart:
         bestErr = err0;
         bestHhat = Hhat0;
         bestX = X0;
-        
+
         errHist = []
         bestErrHist = []
         bestkHist = []
         convHist = []
         errHist.append(err0)
         bestErrHist.append(err0)
-        
+
         for j in range(0,nSearches):
             errVec=np.zeros(nParams)
-            
+
             #CalculateGradient
             for i in range(0,nParams):
                 Xg=X0;
@@ -59,8 +68,8 @@ class mySSHeart:
                 self.setHRclassParamsFromX(Xg)
                 Hhat = self.HRsim(power,HR0)
                 err = self.HRerr(HRactual,Hhat)
-                errVec[i] = err - bestErr 
-            
+                errVec[i] = err - bestErr
+
             #Do Line Search
             deltaVec0 = -1.0*errVec*Xnorm/(bestErr*delta)
             lineErr=np.zeros(nLineSearchSteps)
@@ -78,7 +87,7 @@ class mySSHeart:
                     bestHhat = Hhat;
                     bestX = Xls;
                     bestk=k
-        
+
                 if lineErr[k] > bestErr:
                     k=nLineSearchSteps;
 
@@ -96,32 +105,32 @@ class mySSHeart:
                     bestErr = alphaErr;
                     bestHhat =Hhat;
                     bestX = Xalpha;
-                    
 
-        
-            
+
+
+
             errHist.append(bestErr)
             bestErrHist.append(bestErr)
             bestkHist.append(bestk)
             if all(item == 0 for item in bestkHist[-10:]):
                 break
-            
+
             convergence = (max(bestErrHist[-10:])-min(bestErrHist[-10:]))/bestErrHist[0]
             convHist.append(convergence)
             if convergence < convergenceTolerance:
                 break
-            
+
             print(j,bestk,bestErr, convergence)
             X0=bestX;
             self.setHRclassParamsFromX(X0)
 
-        
+
         return convHist
 
 
     def HRerr(self,HRactual,HRhat):
         return np.power(sum(np.power(np.power(HRactual,3)-np.power(HRhat,3),2))/len(HRactual),1/6)
-    
+
     def HRerrPlot(self,HRactual,HRhat):
         nPts = len(HRactual)
         HRerr = self.HRerr(HRactual,HRhat)
@@ -134,7 +143,7 @@ class mySSHeart:
         plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm)')
         plt.legend()
         plt.show()
-        
+
     def HRerrPlotWithBounds(self,HRactual,HRhat,power):
         nPts = len(HRactual)
         HRerr = self.HRerr(HRactual,HRhat)
@@ -143,16 +152,36 @@ class mySSHeart:
         loadNorm = self.loadNormCalc(power)
         loadNormHR = self.loadNormCalc(power)*(self.HRmax - self.HRmin)
         plt.figure()
-        plt.plot(time,HRactual,label='Actual')
-        plt.plot(time,HRhat,label='Fitted')
-        plt.plot(time,self.HRmax*ones,label = 'HR Maximum')
-        plt.plot(time,loadNormHR+self.HRmin,label="HR Minimum")
-        plt.xlabel('Time (-)')
+        plt.plot(time/60,HRactual,label='Actual')
+        plt.plot(time/60,HRhat,label='Fitted')
+        plt.plot(time/60,self.HRmax*ones,label = 'HR Maximum')
+        plt.plot(time/60,loadNormHR+self.HRmin,label="HR Minimum")
+        plt.xlabel('Time (min)')
         plt.ylabel('HR (bpm)')
-        plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm)')
+        plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm) :: Power at 185bpm: {self.getSSPowFor185BPM():.2f}')
+        #plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm) :: Power @ 145bpm: {self.getSSPowFor140BPM():.2f} )(W)')
         plt.legend()
         plt.show()
-        
+
+    def HRerrPlotWith300WBounds(self,HRactual,HRhat,power):
+        nPts = len(HRactual)
+        HRerr = self.HRerr(HRactual,HRhat)
+        time = np.linspace(0,nPts-1,nPts)
+        ones = np.ones(nPts)
+        loadNorm = self.loadNormCalc(power)
+        loadNormHR = self.loadNormCalc(power)*(self.HRmax - self.HRmin)
+        plt.figure()
+        plt.plot(time/60,HRactual,label='Actual')
+        plt.plot(time/60,HRhat,label='Best Fit Simulation')
+        plt.plot(time/60,self.getHRfor300W()*ones,label = 'HR 300W')
+        plt.plot(time/60,loadNormHR+self.HRmin,label="HR Minimum")
+        plt.xlabel('Time (min)')
+        plt.ylabel('HR (bpm)')
+        plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm) :: Power at 185bpm: {self.getSSPowFor185BPM():.2f}')
+        #plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm) :: Power at 145bpm: {self.getSSPowFor140BPM():.2f} (W)')
+        plt.legend()
+        plt.show()
+
     def HRbeforeAfterPlot(self,HRactual,HRhat1,HRhat2,errHist):
         nPts = len(HRactual)
         HRerr1 = self.HRerr(HRactual,HRhat1)
@@ -160,10 +189,10 @@ class mySSHeart:
         time = np.linspace(0,nPts-1,nPts)
         plt.figure()
         plt.subplot(121)
-        plt.plot(time,HRactual,label='Actual')
-        plt.plot(time,HRhat1,label='Before')
-        plt.plot(time,HRhat2,label='After')
-        plt.xlabel('Time (-)')
+        plt.plot(time/60,HRactual,label='Actual')
+        plt.plot(time/60.,HRhat1,label='Before')
+        plt.plot(time/60.,HRhat2,label='After')
+        plt.xlabel('Time (min)')
         plt.ylabel('HR (bpm)')
         plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm)')
         plt.title
@@ -174,7 +203,7 @@ class mySSHeart:
         plt.ylabel('HR Error (bpm)')
         plt.title(f'HR Error Before: {HRerr1:.2f} After: {HRerr2:.2f}')
         plt.show()
-    
+
     def loadNormCalc(self,power):
         loadNorm = np.array([self.loadCoeff*np.power(power_i/self.Pmax,self.loadExp) for power_i in power])
         loadNorm = loadNorm.cumsum()
@@ -196,7 +225,7 @@ class mySSHeart:
             delta_HR = self.dHRdt(power[i],Hhat[i-1],loadNorm[i-1])
             Hhat[i]=Hhat[i-1]+delta_HR;
         return Hhat
-    
+
     def setHRclassParamsFromX(self,Xtemp):
         #Xorig = [self.HRmin, self.HRmax, self.Pmax, self.delayTau, self.decayTau, self.HRvsP_b, self.HRvsP_m, self.loadCoeff, self.loadExp]
         self.HRmin = Xtemp[0]
@@ -209,21 +238,21 @@ class mySSHeart:
         self.loadCoeff = Xtemp[7]
         self.loadExp   = Xtemp[8]
         return
-        
+
     def getXfromHRclassParams(self):
         #Xorig = [self.HRmin, self.HRmax, self.Pmax, self.delayTau, self.decayTau, self.HRvsP_b, self.HRvsP_m, self.loadCoeff, self.loadExp]
         Xtemp = np.zeros(9)
         Xtemp[0] = self.HRmin
-        Xtemp[1] = self.HRmax 
+        Xtemp[1] = self.HRmax
         Xtemp[2] = self.Pmax
         Xtemp[3] = self.delayTau
         Xtemp[4] = self.decayTau
         Xtemp[5] = self.HRvsP_b
         Xtemp[6] = self.HRvsP_m
-        Xtemp[7] = self.loadCoeff 
+        Xtemp[7] = self.loadCoeff
         Xtemp[8] = self.loadExp
         return Xtemp
-    
+
     def parabolaMinFromThreePoints(self,X,Y):
         X1 = X[0]
         X2 = X[1]
@@ -238,24 +267,20 @@ class mySSHeart:
         bestX = -B / (2*A)
         bestY = C - B*B / (4*A)
         return bestX, bestY
-    
+
     def getHRfor300W(self):
         return self.HRmin+(self.HRmax-self.HRmin)*(self.HRvsP_b+300*self.HRvsP_m/self.Pmax)
-        
-        
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def getSSPowFor185BPM(self):
+        return (self.Pmax/self.HRvsP_m)*(((185-self.HRmin)/(self.HRmax-self.HRmin))-self.HRvsP_b)
+    
+    def getSSPowFor140BPM(self):
+        return (self.Pmax/self.HRvsP_m)*(((140-self.HRmin)/(self.HRmax-self.HRmin))-self.HRvsP_b)
+    
+    def HRerr_standalone(self, X0):
+        self.setHRclassParamsFromX(X0)
+        HRhat = self.HRsim(self.Powref,self.HRref[0])
+        err = self.HRerr(self.HRref,HRhat)
+        print('Err: ',err)
+        return err 
+  

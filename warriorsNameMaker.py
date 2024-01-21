@@ -4,14 +4,14 @@ prefixes =['forest', 'moor', 'oak', 'bracken', 'elk', 'sheep', 'flame', 'night',
 suffixes = ['claw', 'paw', 'paw', 'kit', 'kit', 'star', 'kit', 'star', 'paw', 'kit']
 colors = ['orange', 'black', 'white']
 causeofdeath =['enemycats','rouge','illness']
-numberofkits = [1,3,0]
+numberofkits = [1,3,0,0,8,0,0,4,2,0,0,0,6,2,4,0,3,5,4,2,4,3,0,0,59]
 eyecolor = ['blue','yellow','green']
-patterns = ['stipes','bloches','plain']
+patterns = ['with stipes','with bloches','with stripes']
 clan = ['thunder','wind','river']
 fluffyness = ['notvery','OMGFLUFFY','kindafluff']
-patterncolor = ['orange black','grey','yellow']
+patterncolor = ['orange black','grey']
 gender = ['she-cat','tom']
-nuberofapps = [1,2,0]
+numberofapps = [1,2,0]
 
 
 
@@ -134,6 +134,30 @@ eyecolor.append('light orange')
 eyecolor.append('blue and green')
 eyecolor.append('light green and dark blue')
 eyecolor.append('brown and black')
+causeofdeath.append('starvation')
+numberofapps.append('3')
+numberofapps.append('4')
+numberofkits.append('2')
+patterns.append('with stripes')
+patterns.append('with blotches and stripes')
+patterns.append('with speckled and striped')
+patterns.append('with tortiseshell')
+patterns.append('with patchy')
+patterns.append('with stripes in blotches')
+patterns.append('with dotty and stripes')
+patterns.append('with white paws')
+patterns.append('with black paws')
+patterns.append('with tan paws')
+patterns.append('with multi colored')
+patterns.append('with multi colored paws')
+patterns.append('with white under belly')
+patterns.append('with black muzzle')
+patterns.append('with white muzzle')
+patterns.append('with back stripe')
+
+
+
+
 
 
 numberOfPrefixes = len(prefixes)
@@ -152,7 +176,7 @@ print('your fluffyness level is ', random.choice(fluffyness) )
 
 
 if not (randomSuffix == 'kit' or randomSuffix == 'paw'):
-    totalNumberOfApprenntices = random.choice(nuberofapps)
+    totalNumberOfApprenntices = random.choice(numberofapps)
 
     if totalNumberOfApprenntices > 0:
         print("You have ",totalNumberOfApprenntices,' apprentices, their names are: ')

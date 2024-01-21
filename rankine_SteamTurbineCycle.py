@@ -174,8 +174,8 @@ def plotHSDiagram(rFluid, states):
 
 if __name__ == '__main__':
     Plow = 75.0e3 #Pa
-    Phigh = 3.0e6  #Pa
-    Thigh = 350+273.15 #K
+    Phigh = 90*ct.one_atm  #Pa
+    Thigh = 450+273.15 #K
     mdot = 1.0 #kg/s
     compressor_efficiency = 1.0
     rFluid, states, Q4, Tmin = rankine_steamCycle(mdot,Plow,Phigh,Thigh,compressor_efficiency,1.0)

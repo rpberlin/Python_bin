@@ -101,7 +101,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    pygame.display.flip()
+
     P0 = P
     t += speed
     if t > 1 or t < 0:

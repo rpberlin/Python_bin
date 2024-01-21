@@ -16,6 +16,9 @@ import scipy
 def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
 
     sPath, zElev, oldPower, cad, hr = parseGPX(gpxFilename)
+    if len(cad) != len(sPath):
+        cad = 0*sPath
+        hr = 0*sPath
     mass = myMass+bikeMass;
     eta = 0.5*1.18*CdA;
     driveEff = 0.95
@@ -34,6 +37,7 @@ def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
     MaxCadence = 85;
     MinSpeedKPH = 3.6*(1/60)*2.14*MinCadence*NFrontMin/NRearMax;
     MaxSpeedKPH = 3.6*(1/60)*2.14*MaxCadence*NFrontMax/NRearMin;
+    print('Min/Max Speed:',MinSpeedKPH,' : ',MaxSpeedKPH)
 
     #Filter Profile
     print('Begin Filtering')
@@ -59,14 +63,18 @@ def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
     print('Filtering Complete, Max Slope: ',max(slopesPct))
 
     fig = plt.figure()
-    ax1 = fig.add_subplot(611)
-    line0 = plt.plot(sPath/1000,zElev,label='Raw')
-    line1 = plt.plot(sPath/1000,zFiltered,label='Filtered')
-    ax2 = fig.add_subplot(612)
-    line0 = plt.plot(sPath/1000,slopesPct,label='Raw')
-    ax3 = fig.add_subplot(613)
-    line0 = plt.plot(sPath/1000,powerFax,label='Raw')
-    line0 = plt.plot(sPath/1000,aeroFax,label='Raw')
+    ax1 = fig.add_subplot(511)
+    #line0 = plt.plot(sPath/1000,zElev,label='Raw')
+    line1 = plt.plot(sPath/1000,zFiltered,color='b',label='Elevation')
+    ax1.set_ylabel('Elevation (m)')
+
+    ax2 = fig.add_subplot(514)
+    line2 = plt.plot(sPath/1000,cad,color='k',label='Cadence')
+    ax2.set_ylabel('Cadence (m)')
+    #ax3 = fig.add_subplot(613)
+    #line0 = plt.plot(sPath/1000,powerFax,label='SlopeFactor')
+    #line0 = plt.plot(sPath/1000,aeroFax,label='AeroFactor')
+    #ax3.set_ylabel('NonDim (m)')
     #plt.show()
 
 
@@ -111,18 +119,27 @@ def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
     hours = int(iStep/3600)
     minutes = int((iStep-hours*3600)/60)
     seconds = int(iStep-hours*3600-minutes*60)
+    average_power = np.average(powers)
+    normalized_power = np.power(np.sum(np.power(powers,4))/len(powers),0.25)
+    average_speed_kph = .001*maxDist/(iStep/3600)
 
-    ax4 = fig.add_subplot(614)
-    line0 = plt.plot(sPos/1000,powers,label='Power(W)')
-    ax4 = fig.add_subplot(615)
-    line0 = plt.plot(sPos/1000,speeds*3.6,label='KPH')
-    ax4 = fig.add_subplot(616)
-    line0 = plt.plot(sPos/1000,VAM,label='HR')
+    ax3 = fig.add_subplot(513)
+    line3 = plt.plot(sPath/1000,hr,label='HR')
+    ax3.set_ylabel('Heart Rate (bpm)')
+    ax4 = fig.add_subplot(512)
+    line4 = plt.plot(sPos/1000,powers,color='r',label='Power(W)')
+    ax4.set_ylabel('Power (W)')
+    ax5 = fig.add_subplot(515)
+    line5 = plt.plot(sPos/1000,speeds*3.6,color='g',label='KPH')
+    ax5.set_ylabel('Speed (kph)')
+    ax5.set_xlabel('Distance (km)')
+
     plt.legend()
     plt.show()
 
     VAMify(sPos, zPos, powers, 0*powers, HRs,gpxFilename)
     print('Elapsed Time: ',iStep,' ',hours,':',minutes,':',seconds)
+    print('Average Power:', average_power,' Normalized Power: ', normalized_power, ' Average Speed: ', average_speed_kph)
     compare2GPXroutes(sPos, zPos, powers, 0*powers, HRs ,'Sim',sPath, zElev, oldPower, cad, hr,'Real')
 
 
@@ -197,8 +214,8 @@ if __name__ == '__main__':
     if n < 2:
         print("Correct Usage granFondoOptExplicit.py filename.gpx")
 
-    basePower = 220
-    myMass = 86
+    basePower = 200
+    myMass = 90
     bikeMass = 7.5
     CdA = 0.45
     inputfilename = sys.argv[1]

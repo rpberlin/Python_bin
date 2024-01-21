@@ -163,18 +163,6 @@ def compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,gpx1,sPath2, elev2, powe
     DwgtUbar2 = 3.6*sum([num ** 2 for num in speeds2])/[nPts2-1]
 
 
-    tDiff_delta = 0*tDiff
-    filtSize = 30
-    for i in range(filtSize,len(tDiff)):
-        iMin = max(0,i-filtSize)
-        tDiff_delta = tDiff[i] - tDiff[iMin]
-
-
-
-    fig3 = plt.figure(3)
-
-
-
 
 
 def getQtyAtSfromI0(dist,sPath,Qty,i0):
