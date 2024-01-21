@@ -17,7 +17,7 @@ if __name__ == '__main__':
     #for i in range(1, n):
         #print(i," ",sys.argv[i])
     if n == 1:
-        inputfilename = '/Users/ryanblanchard/Downloads/SundyMornin.gpx'
+        inputfilename = '/Users/ryanblanchard/Downloads/tmp2.tcx'
         #inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Ardiden309.gpx'
         #inputfilename = '/Users/ryanblanchard/Documents/gpxFiles/Ardiden265.gpx'
     if n==2:

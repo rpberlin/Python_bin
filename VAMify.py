@@ -46,7 +46,7 @@ def VAMify(sPath, elev, power, cad, hr,gpxfilename):
     ax1.set_xlabel('Distance (km)')
     line1 = plt.plot(sPath/1000,elev,'b', linewidth=1)
     ax1.xaxis.set_major_locator(MultipleLocator(5))
-    ax1.set_xlim([0,105])
+    #ax1.set_xlim([0,105])
 
     ax2 = fig.add_subplot(212)
     ax2.set_ylabel('VAM (m/hr)')
