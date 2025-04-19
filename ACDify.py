@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if n==2:
         inputfilename = sys.argv[1]
 
-    sPath, elev, power, cad, hr = parseGPX.parseGPX(inputfilename)
+    sPath, elev, power, cad, hr, times = parseGPX.parseGPX(inputfilename)
 
     ACD0 = 0.4
     myACDobj0 = SSACD.mySSACD(ACD0,sPath,elev,power,mass_rider,mass_bike)

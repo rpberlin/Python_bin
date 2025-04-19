@@ -10,10 +10,11 @@ import matplotlib.ticker as mticker
 from matplotlib.ticker import StrMethodFormatter, NullFormatter
 import numpy as np
 import scipy
+import parseGPX
 
 def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
 
-    sPath, zElev, power, cad, hr = importGPX(gpxFilename)
+    sPath, zElev, power, cad, hr, time = parseGPX(gpxFilename)
     mass = myMass+bikeMass;
     eta = 0.5*1.18*CdA;
     dt =1;

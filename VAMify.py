@@ -142,9 +142,12 @@ if __name__ == '__main__':
     #print("Total arguments passed:", n)
     #for i in range(1, n):
         #print(i," ",sys.argv[i])
-
+    #inputfilename = '/Users/ryanblanchard/Downloads/FulGaz_Swellendam_to_Bonnievale3.gpx'
     if n < 2:
-        print("Correct Usage VAMify.py filename.gpx")
+        print("Not enough arguments \n Correct Usage VAMify.py filename.gpx")
+        #sys.exit(0) 
+      
     inputfilename = sys.argv[1];
-    sPath, elev, power, cad, hr = parseGPX(inputfilename)
+    #sPath, elev, power, cad, hr = parseGPX(inputfilename)
+    sPath, elev, power, cad, hr, elapsed_times = parseGPX(inputfilename)
     VAMify(sPath, elev, power, cad, hr, inputfilename)

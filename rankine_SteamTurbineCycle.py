@@ -66,6 +66,11 @@ def rankine_steamCycle(mdot,Plow,Phigh,Thigh,compressor_eta, turbine_eta):
     h4_isentropic = rFluid.enthalpy_mass
     deltah34_isentropic = h3-h4_isentropic
 
+    #real turbine
+
+
+
+
     #State 4 - after turbine
     h4 = h3 - deltah34_isentropic*turbine_eta #adiabatic
     P4 = Plow
@@ -104,7 +109,7 @@ def rankine_steamCycle(mdot,Plow,Phigh,Thigh,compressor_eta, turbine_eta):
 
 
 
-    return rFluid, states, Q4, T1
+    return rFluid, states, Q4, T1, eta_thermal
 
 def plotHSDiagram(rFluid, states):
     extrapFactor = .1
@@ -173,10 +178,30 @@ def plotHSDiagram(rFluid, states):
 
 
 if __name__ == '__main__':
-    Plow = 75.0e3 #Pa
-    Phigh = 90*ct.one_atm  #Pa
+    Plow = 30.0e3 #Pa
+    Phigh = 8e6  #Pa
     Thigh = 450+273.15 #K
     mdot = 1.0 #kg/s
     compressor_efficiency = 1.0
-    rFluid, states, Q4, Tmin = rankine_steamCycle(mdot,Plow,Phigh,Thigh,compressor_efficiency,1.0)
+    T_high_sweep = np.linspace(450,520,22)
+    eta = []
+    Q4s = []
+    for T in T_high_sweep:
+
+        rFluid, states, Q4, Tmin, eta_i = rankine_steamCycle(mdot,Plow,Phigh,T+273.15,compressor_efficiency,0.85)
+        print('Tmin: ', Tmin-273.15,' degC')
+        eta.append(eta_i)
+        Q4s.append(Q4)
+
+    
+
+    plt.plot(T_high_sweep,eta)
+    plt.xlabel('Superheater Max Temp (C)')
+    plt.ylabel('Thermal Efficiency (-)')
+    plt.show()
+    
     plotHSDiagram(rFluid,states)
+
+
+    for i, T in enumerate(T_high_sweep):
+        print(i, T, eta[i], Q4s[i])

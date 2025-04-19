@@ -229,6 +229,6 @@ if __name__ == '__main__':
     if n >= 3:
         inputfilename1 = sys.argv[1];
         inputfilename2 = sys.argv[2];
-    sPath1, elev1, power1, cad1, hr1 = parseGPX(inputfilename1)
-    sPath2, elev2, power2, cad2, hr2 = parseGPX(inputfilename2)
+    sPath1, elev1, power1, cad1, hr1, t1 = parseGPX(inputfilename1)
+    sPath2, elev2, power2, cad2, hr2, t2 = parseGPX(inputfilename2)
     compare2GPXroutes(sPath1, elev1, power1, cad1, hr1 ,inputfilename1,sPath2, elev2, power2, cad2, hr2,inputfilename2)

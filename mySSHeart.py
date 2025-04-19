@@ -281,6 +281,6 @@ class mySSHeart:
         self.setHRclassParamsFromX(X0)
         HRhat = self.HRsim(self.Powref,self.HRref[0])
         err = self.HRerr(self.HRref,HRhat)
-        print('Err: ',err)
+        #print('Err: ',err)
         return err 
   

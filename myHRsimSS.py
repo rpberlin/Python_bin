@@ -22,11 +22,12 @@ if __name__ == '__main__':
     if n==2:
         inputfilename = sys.argv[1];
 
-    sPath, elev, power, cad, hr = parseGPX.parseGPX(inputfilename)
+    sPath, elev, power, cad, hr, time = parseGPX.parseGPX(inputfilename)
     mySSHRobj1 = SSheart.mySSHeart(HRmin, HRmax, Pmax)
     HRhatUnfitted = mySSHRobj1.HRsim(power, hr[0])
     
     errHist = mySSHRobj1.HRfitter(hr, power)
+    
     HRhatBestFit = mySSHRobj1.HRsim(power, hr[0])
     #mySSHRobj1.HRerrPlot(hr,HRhatBestFit)
     mySSHRobj1.HRerrPlotWithBounds(hr, HRhatBestFit, power)

@@ -128,5 +128,5 @@ if __name__ == '__main__':
     if n < 2:
         print("Correct Usage plot_PMdata.py filename.gpx")
     inputfilename = sys.argv[1];
-    sPath, elev, power, cad, hr = parseGPX(inputfilename)
+    sPath, elev, power, cad, hr, time = parseGPX(inputfilename)
     plot_PMdata(power,inputfilename)

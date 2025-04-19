@@ -15,7 +15,7 @@ import scipy
 
 def granFondoOptExplicit(gpxFilename, basePower, myMass, bikeMass, CdA):
 
-    sPath, zElev, oldPower, cad, hr = parseGPX(gpxFilename)
+    sPath, zElev, oldPower, cad, hr, time = parseGPX(gpxFilename)
     if len(cad) != len(sPath):
         cad = 0*sPath
         hr = 0*sPath

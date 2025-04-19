@@ -22,7 +22,7 @@ if __name__ == '__main__':
     if n==2:
         inputfilename = sys.argv[1];
 
-    sPath, elev, power, cad, hr = parseGPX.parseGPX(inputfilename)
+    sPath, elev, power, cad, hr, time, date = parseGPX.parseGPXorTCX(inputfilename)
     mySSHRobj1 = SSheart.mySSHeart(HRmin, HRmax, Pmax,hr,power)
     HRhatUnfitted = mySSHRobj1.HRsim(power, hr[0])
     res  = mySSHRobj1.HRfitter_scipy()
