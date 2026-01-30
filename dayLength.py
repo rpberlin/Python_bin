@@ -10,7 +10,7 @@ def calcDaylight(degNorth):
     earthTilt = 23.5*np.pi/180
     latBerlin = 52.52*np.pi/180
     latCharlotte = 35.22*np.pi/180
-    latMuc =  66.5*np.pi/180
+    latMuc =  48.3*np.pi/180
     minutes_per_day = 24*60
     sun_orbit_omega = 2*np.pi/365.25 #rad/day
     tilt_phis = []
@@ -28,8 +28,9 @@ def calcDaylight(degNorth):
     muc_new_minutes = []
     start_date = dt.date(2024, 12, 21)
     
-    days = np.arange(0,183)
-    dates = [start_date + dt.timedelta(days=int(day)) for day in days] 
+    days = np.arange(0,31+8)
+    dates = [start_date + dt.timedelta(days=int(day)) for day in days]
+
 
 
     for day in days:
@@ -50,6 +51,10 @@ def calcDaylight(degNorth):
         berlin_night_minutes.append(minutes_per_day*berlin_night_frac)
         clt_night_minutes.append(minutes_per_day*clt_night_frac)
         muc_night_minutes.append(minutes_per_day*muc_night_frac)
+    
+    berlin_minutes_longer_than_shortest = max(berlin_night_minutes) - berlin_night_minutes
+    clt_minutes_longer_than_shortest = max(clt_night_minutes) - clt_night_minutes
+    muc_minutes_longer_than_shortest = max(muc_night_minutes) - muc_night_minutes
 
 
     for i in range(len(days)-1):
@@ -66,9 +71,12 @@ def calcDaylight(degNorth):
 
     fig2 = plt.figure(2)
     ax1 = fig2.add_subplot(221)
-    line1 = plt.plot(days,np.degrees(tilt_phis))
+    #line1 = plt.plot(days,np.degrees(tilt_phis))
     ax1.set_xlabel('days')
-    ax1.set_ylabel('tilt angle (deg)')
+    ax1.semilogy(days,berlin_minutes_longer_than_shortest,label="BER")
+    ax1.semilogy(days,clt_minutes_longer_than_shortest,label="CLT")
+    ax1.semilogy(days,muc_minutes_longer_than_shortest,label="MUC")
+    ax1.set_ylabel('minutes longer than shortest day (min)')
     plt.legend()
 
 
@@ -113,11 +121,7 @@ def calcDaylight(degNorth):
 if __name__ == '__main__':
     n = len(sys.argv)
     print("Total arguments passed:", n)
-    #for i in range(1, n):
-        #print(i," ",sys.argv[i])
-    #inputfilename = '/Users/ryanblanchard/Downloads/FulGaz_Swellendam_to_Bonnievale3.gpx'
 
-    
     degNorth = 0
     calcDaylight(degNorth)
 

@@ -147,7 +147,10 @@ def parseGPX(gpxFilename):
                     elev.append(float(y.text.strip()))
                 if 'power' in str(y.tag):
                     #print('power= ', y.text)
-                    power.append(float(y.text))
+                    if 'none' in y.text.lower():
+                        power.append(0)
+                    else:
+                        power.append(float(y.text))
                 if 'cad' in str(y.tag):
                     #print('cad= ', y.text)
                     cad.append(float(y.text))
