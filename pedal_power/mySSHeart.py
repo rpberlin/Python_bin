@@ -178,7 +178,7 @@ class mySSHeart:
         plt.xlabel('Time (min)')
         plt.ylabel('HR (bpm)')
         plt.title(f'HR @ 300W: {self.getHRfor300W():.2f} (bpm) :: Power at 185bpm: {self.getSSPowFor185BPM():.2f}')
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.show()
 
     def HRbeforeAfterPlot(self,HRactual,HRhat1,HRhat2,errHist):
