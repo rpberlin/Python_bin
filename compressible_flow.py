@@ -53,5 +53,6 @@ if __name__ == '__main__':
     #plt.plot(M_sweep,Pt_sweep)
     #plt.plot(M_sweep,Tt_sweep)
     #plt.plot(M_sweep,P02_sweep)
-    plt.plot(M_sweep,A_per_Astar_sweep)
-    plt.show()
+    #plt.plot(M_sweep,A_per_Astar_sweep)
+    #plt.show()
+    print(A_per_Astar(0.097,1.4))

@@ -1,5 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
-
+#!/usr/bin/env python3
 
 import mySSHeart as SSheart
 import sys, pathlib
@@ -32,10 +31,7 @@ if __name__ == '__main__':
 
     #errHist = mySSHRobj1.HRfitter(hr, power)
     HRhatBestFit = mySSHRobj1.HRsim(power, hr[0])
-    #mySSHRobj1.HRerrPlot(hr,HRhatBestFit)
-    #mySSHRobj1.HRerrPlotWithBounds(hr, HRhatBestFit, power)
     mySSHRobj1.HRerrPlotWith300WBounds(hr, HRhatBestFit, power)
-    #mySSHRobj1.HRbeforeAfterPlot(hr,HRhatUnfitted,HRhatBestFit,errHist)
     print(mySSHRobj1)
 
     fpathgpx = pathlib.Path(inputfilename)
