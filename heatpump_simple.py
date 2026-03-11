@@ -148,6 +148,7 @@ def HeatPumpCycle(fluid, Q_dot, T_low, T_high):
     # condensation begins; used to close the loop on the H-S diagram.
     T2a = T_from_PQ(P2, 1.0, fluid)
     h2a = H_from_TQ(T2a, 1.0, fluid)
+    P2a = P2
     s2a = S_from_TQ(T2a, 1.0, fluid)
     v2a = V_from_TQ(T2a, 1.0, fluid)
 
@@ -226,6 +227,8 @@ def plotloopandHSDiagram(fluid, dictlist):
     fig, axes = plt.subplots(2, 2, figsize=(11, 8.5))
 
     # Draw saturation dome on H-S and P-v panels
+    axes[0, 0].plot(s_liq.to('J/kg/K'), T_sweep.to('degC'), 'r-', label='Sat. liquid')
+    axes[0, 0].plot(s_vap.to('J/kg/K'), T_sweep.to('degC'), 'b-', label='Sat. vapour')
     axes[1, 0].plot(s_liq.to('J/kg/K'), h_liq.to('J/kg'), 'r-', label='Sat. liquid')
     axes[1, 0].plot(s_vap.to('J/kg/K'), h_vap.to('J/kg'), 'b-', label='Sat. vapour')
     axes[1, 1].semilogx(v_liq, P_liq.to('atm'), 'r-', label='Sat. liquid')
@@ -239,9 +242,14 @@ def plotloopandHSDiagram(fluid, dictlist):
         cops.append(state['cop'])
         T_ambs.append(state['T_amb'])
 
+        # T-S diagram: cycle loop for this operating condition
+        axes[0, 0].plot(state['s'], state['T'].to('degC'),label=f"T_amb = {T_amb_label:.0f}")
+        axes[0, 0].set_xlabel('Entropy [J/kg/K]')
+        axes[0, 0].set_ylabel('Temperature [°C]')
+        axes[0, 0].set_title('T-S Diagram')
+
         # H-S diagram: cycle loop for this operating condition
-        axes[1, 0].plot(state['s'], state['h'].to('J/kg'),
-                        label=f"T_amb = {T_amb_label:.0f}")
+        axes[1, 0].plot(state['s'], state['h'].to('J/kg'),label=f"T_amb = {T_amb_label:.0f}")
         axes[1, 0].set_xlabel('Entropy [J/kg/K]')
         axes[1, 0].set_ylabel('Enthalpy [J/kg]')
         axes[1, 0].set_title('H-S Diagram')
@@ -259,14 +267,16 @@ def plotloopandHSDiagram(fluid, dictlist):
     axes[0, 1].set_ylabel('COP [-]')
     axes[0, 1].set_title('COP vs T_ambient')
 
+    # Zoom T-S diagram to the relevant region (wet/superheated zone for R32)
+    axes[0, 0].set_xlim([1000, 2500])
+    axes[0, 0].set_ylim([-20, 100])
+    axes[0, 0].legend(fontsize=8)
+
     # Zoom H-S diagram to the relevant region (wet/superheated zone for R32)
     axes[1, 0].set_xlim([1200, 2500])
     axes[1, 0].set_ylim([300_000, 600_000])
     axes[1, 0].legend(fontsize=8)
     axes[1, 1].legend(fontsize=8)
-
-    # Top-left panel reserved; hide for now
-    axes[0, 0].set_visible(False)
 
     plt.tight_layout()
     plt.show()
@@ -280,7 +290,7 @@ if __name__ == '__main__':
 
     fluid = "R32"
     Q_dot  = Q_(10, 'kW')      # fixed condenser output (heating capacity)
-    T_high = Q_(100, 'degC')   # fixed condenser temperature for all cases
+    T_high = Q_(90, 'degC')   # fixed condenser temperature for all cases
 
     # Evaporator temperatures representing different ambient/source conditions
     T_lows = [Q_(-10, 'degC'), Q_(0, 'degC'), Q_(10, 'degC'), Q_(20, 'degC')]
