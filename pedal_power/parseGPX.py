@@ -177,6 +177,9 @@ def parseGPX(gpxFilename):
     for i in range(0,nPts-len(power)):
         power = np.append(power,[0])
 
+    for i in range(0,nPts-len(cad)):
+        cad = np.append(cad,[0])
+
 
     #print('Npts: ',nPts,' lenPath ',len(sPath),' lenElev ',len(elev),' nPow ',len(power), 'lenCad ',len(cad), 'lenHr', len(hr))
 

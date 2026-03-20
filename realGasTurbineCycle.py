@@ -131,6 +131,32 @@ if __name__ == '__main__':
     P0 = ct.one_atm
     OPR = 40        #Overall Pressure Ratio
     eta_poly = .9
+    eta_poly_list = [0.85,0.9,0.95]
+    ctair  =ct.Solution('air.yaml')
+    states_list = [ct.SolutionArray(ctair) for tmp in eta_poly_list]
+    eta_thermal_list = np.ones_like(eta_poly_list)
+    
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+    for i, eta_p  in enumerate(eta_poly_list):
+        ctair.TP = T0,P0
+        states_i = states_list[i]
+        tau,eta,Tb,hb = tauAndEtafromPolytropicEffandPi(ctair,states_list[i],eta_p,1.8)
+        eta_thermal_list[i]=eta
+        axs[0].plot(states_i.T,states_i.P/P0,label=f'eta_p ={eta_p}')
+        axs[1].plot(states_i.entropy_mass,states_i.enthalpy_mass,label=f'eta_p ={eta_p}')
+    axs[0].set_xlabel('Temperature (K)')
+    axs[0].set_ylabel('Pressure Ratio (-)')
+    axs[1].set_xlabel('Entropy (J/kg-K)')
+    axs[1].set_ylabel('Enthalpy (J/kg)')
+    axs[2].plot(eta_poly_list,eta_thermal_list)
+    axs[2].set_xlabel('Polytropic Efficiency (-)')
+    axs[2].set_ylabel('Compressor Isentropic Efficiency (-)')
+    axs[0].legend()
+    axs[1].legend()
+    plt.show()
+
+
+
 
     gas = ct.Solution('gri30.yaml')
     fuel = "CH4:1"
@@ -166,3 +192,5 @@ if __name__ == '__main__':
     wdotNet = wdotTurbine - wdotCompressor
     eta_thermal = wdotNet/qdotburner
     print(f'wdotCompressor: {wdotCompressor:.3f} qdotburner: {qdotburner:.3f} wdotTurbine: {wdotTurbine:.3f} wdotNet: {wdotNet:.3f} eta_thermal: {eta_thermal:.3f}')
+
+
